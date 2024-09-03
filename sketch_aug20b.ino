@@ -3,9 +3,15 @@ const int echoPin = 13;
 const int buzzerPin = 8;  // Pino do buzzer
 long duration;
 int distance;
+const int pinRed = 2;
+const int pinGreen = 3;
+const int pinBlue = 4;
 
 void setup() {
-  // Define os pinos como entrada e saída
+  // Configura as portas como saídas
+  pinMode(pinRed, OUTPUT);
+  pinMode(pinGreen, OUTPUT);
+  pinMode(pinBlue, OUTPUT);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   pinMode(buzzerPin, OUTPUT);
@@ -34,42 +40,35 @@ void loop() {
   Serial.print(distance);
   Serial.println(" cm");
 
-   
   if (distance < 10) {
-
-    for (int i = 0; i < 8; i++) { 
-      digitalWrite(buzzerPin, HIGH);  // Ativa o buzzer
-      delay(50);                     // Aguarda 100ms
-      digitalWrite(buzzerPin, LOW);   // Desativa o buzzer
-      delay(100);                     // Aguarda 100ms
-    }
-  } else {
-    digitalWrite(buzzerPin, LOW);   // Desativa o buzzer se a distância for maior que 20 cm
-  }
-   
-  if (distance < 20) {
-
-    for (int i = 0; i < 5; i++) { 
-      digitalWrite(buzzerPin, HIGH);  // Ativa o buzzer
-      delay(100);                     // Aguarda 100ms
-      digitalWrite(buzzerPin, LOW);   // Desativa o buzzer
-      delay(100);                     // Aguarda 100ms
-    }
-  } else {
-    digitalWrite(buzzerPin, LOW);   // Desativa o buzzer se a distância for maior que 20 cm
+    // Menos de 10 cm: LED vermelho e buzzer rápido
+    digitalWrite(pinRed, LOW);    // Vermelho ligado
+    digitalWrite(pinGreen, HIGH); // Verde desligado
+    digitalWrite(pinBlue, HIGH);  // Azul desligado
+    tone(buzzerPin, 1000);        // Ativa o buzzer com 1000 Hz
   } 
-  if (distance < 30) {
-
-    for (int i = 0; i < 2; i++) { 
-      digitalWrite(buzzerPin, HIGH);  // Ativa o buzzer
-      delay(100);                     // Aguarda 100ms
-      digitalWrite(buzzerPin, LOW);   // Desativa o buzzer
-      delay(100);                     // Aguarda 100ms
-    }
-  } else {
-    digitalWrite(buzzerPin, LOW);   // Desativa o buzzer se a distância for maior que 20 cm
+  else if (distance < 20) {
+    // Entre 10 e 20 cm: LED amarelo (vermelho + verde) e buzzer moderado
+    digitalWrite(pinRed, LOW);    // Vermelho ligado
+    digitalWrite(pinGreen, LOW);  // Verde ligado
+    digitalWrite(pinBlue, HIGH);  // Azul desligado
+    tone(buzzerPin, 500);         // Ativa o buzzer com 500 Hz
+  } 
+  else if (distance < 30) {
+    // Entre 20 e 30 cm: LED verde e buzzer lento
+    digitalWrite(pinRed, HIGH);   // Vermelho desligado
+    digitalWrite(pinGreen, LOW);  // Verde ligado
+    digitalWrite(pinBlue, HIGH);  // Azul desligado
+    tone(buzzerPin, 250);         // Ativa o buzzer com 250 Hz
+  } 
+  else {
+    // Maior que 30 cm: Desliga tudo
+    digitalWrite(pinRed, HIGH);   // Vermelho desligado
+    digitalWrite(pinGreen, HIGH); // Verde desligado
+    digitalWrite(pinBlue, LOW);  // Azul desligado
+    noTone(buzzerPin);            // Desativa o buzzer
   }
 
   // Aguarda um pouco antes de repetir a leitura
-  delay(300);
+  delay(200);
 }
