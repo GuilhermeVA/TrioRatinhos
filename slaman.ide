@@ -2,8 +2,8 @@
 #include <PubSubClient.h>
 
 // Definições de pinos do HC-SR04
-#define TRIG_PIN 5
-#define ECHO_PIN 18
+#define TRIG_PIN 12
+#define ECHO_PIN 13
 
 // Credenciais do Wi-Fi
 const char* ssid = "nome_da_sua_rede";
