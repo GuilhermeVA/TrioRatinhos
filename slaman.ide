@@ -1,0 +1,101 @@
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// Definições de pinos do HC-SR04
+#define TRIG_PIN 5
+#define ECHO_PIN 18
+
+// Credenciais do Wi-Fi
+const char* ssid = "nome_da_sua_rede";
+const char* password = "senha_da_sua_rede";
+
+// Configuração do broker MQTT
+const char* mqtt_server = "192.168.0.100"; // IP do seu broker MQTT
+const int mqtt_port = 1883;
+const char* mqtt_topic = "sensor/distancia";
+
+// Variáveis para o MQTT
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+long duration;
+float distance;
+
+void setup_wifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("Conectando-se a ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi conectado");
+  Serial.println("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+void reconnect() {
+  // Loop até conectar novamente ao broker
+  while (!client.connected()) {
+    Serial.print("Tentando conectar ao MQTT...");
+    if (client.connect("ESP32Client")) {
+      Serial.println("Conectado");
+    } else {
+      Serial.print("Falha, rc=");
+      Serial.print(client.state());
+      Serial.println(" tentando novamente em 5 segundos");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Configurar os pinos do sensor
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  // Conectar ao Wi-Fi
+  setup_wifi();
+
+  // Configurar o cliente MQTT
+  client.setServer(mqtt_server, mqtt_port);
+}
+
+void loop() {
+  // Reconectar ao MQTT caso caia
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  // Medição do sensor ultrassônico
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+
+  duration = pulseIn(ECHO_PIN, HIGH);
+  distance = duration * 0.034 / 2; // Distância em cm
+
+  Serial.print("Distância: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Converter a distância para String para enviar via MQTT
+  String distanceStr = String(distance);
+
+  // Publicar o valor da distância no tópico MQTT
+  client.publish(mqtt_topic, distanceStr.c_str());
+
+  // Espera 2 segundos antes da próxima medição
+  delay(2000);
+}
