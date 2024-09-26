@@ -58,8 +58,6 @@ void reconnect() {
   }
 }
 
-
-
 void setup() {
   Serial.begin(9600);
 
@@ -78,7 +76,7 @@ void setup() {
   client.setServer(mqtt_server, mqtt_port);
 }
 
-void verificar_vaga(int trigPin, int echoPin, const char* vaga) {
+String verificar_vaga(int trigPin, int echoPin, const char* vaga) {
   // Medição do sensor ultrassônico
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -89,23 +87,11 @@ void verificar_vaga(int trigPin, int echoPin, const char* vaga) {
   long duration = pulseIn(echoPin, HIGH);
   float distance = duration * 0.034 / 2; // Distância em cm
 
-  String statusVaga;
-
+  // Verifica se a vaga está ocupada ou livre
   if (distance < 10) {
-    statusVaga = String(vaga) + ": Ocupada";
+    return String(vaga) + ": Ocupada";
   } else {
-    statusVaga = String(vaga) + ": Livre";
-  }
-
-  // Exibe o status da vaga no monitor serial
-  Serial.println(statusVaga);
-
-  // Publicar o status da vaga no tópico MQTT
-  bool sucesso = client.publish(mqtt_topic, statusVaga.c_str());
-  if (sucesso) {
-    Serial.println("Mensagem publicada com sucesso no MQTT");
-  } else {
-    Serial.println("Falha ao publicar mensagem no MQTT");
+    return String(vaga) + ": Livre";
   }
 }
 
@@ -117,13 +103,28 @@ void loop() {
 
   if (!client.connected()) {
     reconnect();
-  }else{
-  client.loop();
+  } else {
+    client.loop();
   }
-  // Verificar o estado de cada vaga
-  verificar_vaga(TRIG_PIN1, ECHO_PIN1, "Vaga 1");
-  verificar_vaga(TRIG_PIN2, ECHO_PIN2, "Vaga 2");
-  verificar_vaga(TRIG_PIN3, ECHO_PIN3, "Vaga 3");
 
-  delay(10000);
+  // Verificar o estado de cada vaga
+  String statusVaga1 = verificar_vaga(TRIG_PIN1, ECHO_PIN1, "Vaga 1");
+  String statusVaga2 = verificar_vaga(TRIG_PIN2, ECHO_PIN2, "Vaga 2");
+  String statusVaga3 = verificar_vaga(TRIG_PIN3, ECHO_PIN3, "Vaga 3");
+
+  // Concatenar a mensagem final
+  String mensagemFinal = statusVaga1 + "\n" + statusVaga2 + "\n" + statusVaga3;
+
+  // Exibe a mensagem no monitor serial
+  Serial.println(mensagemFinal);
+
+  // Publicar a mensagem final no tópico MQTT
+  bool sucesso = client.publish(mqtt_topic, mensagemFinal.c_str());
+  if (sucesso) {
+    Serial.println("Mensagem publicada com sucesso no MQTT");
+  } else {
+    Serial.println("Falha ao publicar mensagem no MQTT");
+  }
+
+  delay(10000); // Espera de 10 segundos antes da próxima leitura
 }
