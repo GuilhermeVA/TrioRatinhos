@@ -3,16 +3,34 @@ sys.path.append('D:/Documentos/OneDrive/Ibmec/Sistemas Embarcados/teste1/yolov5'
 import cv2
 import torch
 import numpy as np
+import yt_dlp
 from collections import deque
 from sort import Sort
+
+import yt_dlp
+
+# Função para baixar vídeo usando yt-dlp
+def download_video(url, path="test_video.mp4"):
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': path,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+    print(f"Vídeo baixado em: {path}")
+# URL do vídeo que você deseja testar (substitua com um link válido)
+video_url = "https://www.youtube.com/watch?v=3IaKJuZN55k"
+
+# Baixe o vídeo usando yt-dlp
+download_video(video_url, "test_video.mp4")
 
 
 # Configurações do YOLO e do rastreador SORT
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s')  # YOLOv5 pré-treinado
-video_path = 'D:/Documentos/OneDrive/Ibmec/Sistemas Embarcados/teste1/teste/Set01_video01.h264'  # Caminho do vídeo
+video_path = 'test_video.mp4'  # Caminho do vídeo
 cap = cv2.VideoCapture(video_path)
 fps = cap.get(cv2.CAP_PROP_FPS)  # Taxa de quadros do vídeo
-scale_factor = 0.02  # Ajuste para um valor realista para a sua câmera e configuração
+scale_factor = 0.03  # Ajuste para um valor realista para a sua câmera e configuração
 
 # Inicializa o rastreador SORT
 tracker = Sort(max_age=5, min_hits=2, iou_threshold=0.3)
