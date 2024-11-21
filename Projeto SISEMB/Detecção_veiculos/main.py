@@ -13,10 +13,10 @@ fps = cap.get(cv2.CAP_PROP_FPS)  # Taxa de quadros do vídeo
 
 # Definição das linhas de profundidade
 depth_lines = [
-    {'y_position': 50, 'scale_factor': 0.02},  # Linha mais próxima
-    {'y_position': 150, 'scale_factor': 0.03},
-    {'y_position': 250, 'scale_factor': 0.04},  # Linha intermediária
-    {'y_position': 350, 'scale_factor': 0.05},  # Linha mais distante
+    {'y_position': 100, 'scale_factor': 0.045},  
+    {'y_position': 250, 'scale_factor': 0.033},
+    {'y_position': 350, 'scale_factor': 0.045},  
+    
 ]
 
 # Inicializa o rastreador SORT
@@ -37,9 +37,9 @@ delay_para_media = 0.5  # Delay de 0.5 segundos
 def draw_depth_lines(frame, depth_lines):
     for line in depth_lines:
         y = line['y_position']
-        cv2.line(frame, (0, y), (frame.shape[1], y), (0, 255, 255), 1)  # Linhas amarelas
-        cv2.putText(frame, f"Scale: {line['scale_factor']:.2f}", 
-                    (10, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
+        cv2.line(frame, (0, y), (frame.shape[1], y), (0, 0, 255), 1)  # Linhas amarelas
+        cv2.putText(frame, f"Scale: {line['scale_factor']:.3f}", 
+                    (10, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
 # Função para determinar o scale factor com base na posição y
 def get_scale_factor(y_position, depth_lines):
@@ -56,7 +56,7 @@ while cap.isOpened():
     frame = cv2.resize(frame, (640, 360))
 
     # Desenha as linhas de profundidade no vídeo
-    draw_depth_lines(frame, depth_lines)
+    #draw_depth_lines(frame, depth_lines)
 
     # Detecção de veículos usando YOLO
     results = model(frame)
